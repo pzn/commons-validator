@@ -105,6 +105,12 @@ public class UrlValidator implements Serializable {
     public static final long ALLOW_LOCAL_URLS = 1 << 3; // CHECKSTYLE IGNORE MagicNumber
 
     /**
+     * Enabling this option will not verify if it is a valid domain. If used,
+     * {@link #ALLOW_LOCAL_URLS} will be ignored.
+     */
+    public static final long ALLOW_ALL_DOMAINS = 1 << 4; // CHECKSTYLE IGNORE MagicNumber
+
+    /**
      * This expression derived/taken from the BNF for URI (RFC2396).
      */
     private static final String URL_REGEX =
@@ -402,16 +408,18 @@ public class UrlValidator implements Serializable {
                     return false;
                 }
         } else {
-            String hostLocation = authorityMatcher.group(PARSE_AUTHORITY_HOST_IP);
-            // check if authority is hostname or IP address:
-            // try a hostname first since that's much more likely
-            DomainValidator domainValidator = DomainValidator.getInstance(isOn(ALLOW_LOCAL_URLS));
-            if (!domainValidator.isValid(hostLocation)) {
-                // try an IPv4 address
-                InetAddressValidator inetAddressValidator = InetAddressValidator.getInstance();
-                if (!inetAddressValidator.isValidInet4Address(hostLocation)) {
-                    // isn't IPv4, so the URL is invalid
-                    return false;
+            if (isOff(ALLOW_ALL_DOMAINS)) {
+                String hostLocation = authorityMatcher.group(PARSE_AUTHORITY_HOST_IP);
+                // check if authority is hostname or IP address:
+                // try a hostname first since that's much more likely
+                DomainValidator domainValidator = DomainValidator.getInstance(isOn(ALLOW_LOCAL_URLS));
+                if (!domainValidator.isValid(hostLocation)) {
+                    // try an IPv4 address
+                    InetAddressValidator inetAddressValidator = InetAddressValidator.getInstance();
+                    if (!inetAddressValidator.isValidInet4Address(hostLocation)) {
+                        // isn't IPv4, so the URL is invalid
+                        return false;
+                    }
                 }
             }
             String port = authorityMatcher.group(PARSE_AUTHORITY_PORT);

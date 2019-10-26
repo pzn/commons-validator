@@ -16,6 +16,8 @@
  */
 package org.apache.commons.validator.routines;
 
+import static org.apache.commons.validator.routines.UrlValidator.ALLOW_ALL_DOMAINS;
+
 import org.apache.commons.validator.ResultPair;
 
 import junit.framework.TestCase;
@@ -497,6 +499,13 @@ protected void setUp() {
        assertTrue(validator.isValid("http://example.com/serach?address=Main%20Avenue"));
        assertTrue(validator.isValid("http://example.com/serach?address=Main+Avenue"));
    }
+
+  public void testValidator459() {
+    UrlValidator validatorNotAllowingAllDomains = new UrlValidator();
+    assertFalse(validatorNotAllowingAllDomains.isValid("http://hello.whatever/"));
+    UrlValidator validatorAllowingAllDomains = new UrlValidator(ALLOW_ALL_DOMAINS);
+    assertTrue(validatorAllowingAllDomains.isValid("http://hello.whatever/"));
+  }
 
    //-------------------- Test data for creating a composite URL
    /**
